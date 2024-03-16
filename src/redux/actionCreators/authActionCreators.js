@@ -3,6 +3,8 @@ import { auth, database } from "../../API/firebase";
 import userModel from "../../models/users";
 import { RESET_USER, SET_USER } from "../actions/authActions";
 import { RESET_FOLDERS_FILES } from "../actions/filefoldersActions";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 const setUser = (data) => ({
   type: SET_USER,
@@ -45,19 +47,29 @@ export const registerUser =
 
 export const loginUser =
   ({ email, password }, setError) =>
-  (dispatch) => {
-    auth
-      .signInWithEmailAndPassword(email, password)
-      .then(async (user) => {
-        const usr = await database.users
-          .where("uid", "==", user.user.uid)
-          .get();
-        console.log(usr.docs);
-      })
-      .catch(() => {
-        setError("Invalid Email Or Password!");
-      });
+  async (dispatch) => {
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const usr = await database.users.where("uid", "==", userCredential.user.uid).get();
+      console.log(usr.docs);
+    } catch (err) {
+      console.error(err);
+      setError("Invalid Email Or Password!");
+    }
   };
+
+export const signInWithGoogle = (setError) => async (dispatch) => {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const userCredential = await auth.signInWithPopup(provider);
+    const user = userCredential.user;
+    const usr = await database.users.where("uid", "==", user.uid).get();
+    console.log(usr.docs);
+  } catch (err) {
+    console.error(err);
+    setError("Failed to sign in with Google");
+  }
+};
 
 export const getUser = () => (dispatch) => {
   auth.onAuthStateChanged(function (user) {
@@ -74,13 +86,13 @@ export const getUser = () => (dispatch) => {
   });
 };
 
-const reserFilesFolders = () => ({
+const resetFilesFolders = () => ({
   type: RESET_FOLDERS_FILES,
 });
 
 export const logoutUser = () => (dispatch) => {
   auth.signOut().then(() => {
     dispatch(resetUser());
-    dispatch(reserFilesFolders());
+    dispatch(resetFilesFolders());
   });
 };

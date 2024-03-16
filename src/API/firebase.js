@@ -12,9 +12,9 @@ const firebaseConfig = {
   appId: process.env.React_App_appId,
 };
 
-firebase.initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 
-const firestore = firebase.firestore();
+export const firestore = app.firestore();
 export const database = {
   users: firestore.collection("users"),
   docs: firestore.collection("docs"),
@@ -22,6 +22,8 @@ export const database = {
   date: firebase.firestore.FieldValue.serverTimestamp(),
 };
 
-export const storage = firebase.storage();
+export const storage = app.storage();
 
-export const auth = firebase.auth();
+export const auth = app.auth();
+
+export default app;

@@ -3,7 +3,9 @@ import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import { loginUser } from "../../../redux/actionCreators/authActionCreators";
+import { loginUser, signInWithGoogle } from "../../../redux/actionCreators/authActionCreators";
+import { GoogleLogin } from "react-google-login";
+import styled from "styled-components"; // Make sure styled-components is installed and imported
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -26,6 +28,11 @@ const Login = () => {
     dispatch(loginUser(data, setError));
   };
 
+  const handleGoogleSignInSuccess = (response) => {
+    const { tokenId } = response;
+    dispatch(signInWithGoogle(tokenId));
+  };
+
   useEffect(() => {
     if (error) {
       toast.error(error);
@@ -34,6 +41,7 @@ const Login = () => {
       history.goBack();
     }
   }, [error]);
+
   return (
     <Container>
       <Row>
@@ -74,11 +82,46 @@ const Login = () => {
                 Register
               </Link>
             </p>
+            <GoogleLogin
+              clientId="YOUR_GOOGLE_CLIENT_ID"
+              buttonText="Sign in with Google"
+              onSuccess={handleGoogleSignInSuccess}
+              onFailure={(response) => console.log(response)}
+              cookiePolicy={'single_host_origin'}
+              render={(renderProps) => (
+                <StyledGoogleButton onClick={renderProps.onClick} disabled={renderProps.disabled}>
+                  <img src="google-icon.svg" alt="Google icon" />
+                  Sign in with Google
+                </StyledGoogleButton>
+              )}
+            />
           </Form>
         </Col>
       </Row>
     </Container>
   );
 };
+const StyledGoogleButton = styled(Button)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-top: 16px;
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
+`;
 export default Login;
