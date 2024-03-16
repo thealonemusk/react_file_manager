@@ -90,8 +90,10 @@ const addUserFolder = (data) => ({
 });
 
 export const addFolderUser = (name, userId, parent, path) => (dispatch) => {
+  const folderPath = path ? `${path}/${name}` : name;
+
   database.docs
-    .add(docModel(userId, name, path, parent))
+    .add(docModel(userId, name, folderPath, parent))
     .then(async (doc) => {
       const data = await doc.get();
       dispatch(addUserFolder({ data: data.data(), docId: data.id }));
